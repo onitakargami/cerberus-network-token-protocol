@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerberus Network Token Protocol</title>
+    <style>
+        /* Base styles and reset */
+        @font-face {
+            font-family: 'MassEffect';
+            src: url('mass_effect.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap; /* Optional: ensures text remains visible during webfont load */
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'MassEffect', sans-serif;
+        }
+        
+        body {
+            background-color: #0a0a12;
+            color: #ff9d00;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+      
+        /* Grid overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 157, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 157, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: 1;
+            pointer-events: none;
+            animation: gridPulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes gridPulse {
+            0% { opacity: 0.0; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0.1; }
+        }
+        
+        /* Terminal container */
+        .terminal {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid rgba(255, 157, 0, 0.3);
+            border-radius: 8px;
+            background-color: rgba(10, 10, 18, 0.95);
+            box-shadow: 0 0 40px rgba(255, 157, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Scanline effect */
+        .terminal::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 50%, rgba(255, 157, 0, 0.2) 50%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+            animation: scanline 50s linear infinite;
+        }
+        
+        /* Header section */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 157, 0, 0.3);
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 200px;
+            height: 200px;
+            background-image: url('small-logo.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            overflow: visible; /* Changed from hidden to visible */
+            filter: drop-shadow(0 0 8px rgba(255, 157, 0, 0.7));
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoPulse {
+            0% { filter: drop-shadow(0 0 8px rgba(255, 157, 0, 0.7)); }
+            50% { filter: drop-shadow(0 0 16px rgba(255, 157, 0, 0.9)); }
+            100% { filter: drop-shadow(0 0 8px rgba(255, 157, 0, 0.7)); }
+        }
+        
+        .title {
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 157, 0, 0.7);
+        }
+        
+        h2, h3 {
+            font-size: 1rem;
+            color: rgba(255, 157, 0, 0.7);
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+      
+        p {
+            font-size: 0.85rem;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        
+        /* Content sections */
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background-color: rgba(20, 20, 30, 0.7);
+            border: 1px solid rgba(255, 157, 0, 0.3);
+            border-radius: 4px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff9d00, transparent);
+            animation: glow 3s infinite;
+        }
+        
+        .panel h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #ffb54a;
+        }
+        
+        .panel p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: rgba(255, 157, 0, 0.8);
+        }
+        
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(255, 157, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #ff9d00;
+        }
+        
+        /* Interactive elements */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: transparent;
+            color: #ff9d00;
+            border: 1px solid #ff9d00;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            background-color: rgba(255, 157, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 157, 0, 0.5);
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 157, 0, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover::after {
+            left: 100%;
+        }
+        
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            background: rgba(255, 157, 0, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 157, 0, 0.3);
+            color: rgba(255, 157, 0, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        @keyframes scanline {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 0 100%;
+            }
+        }
+        
+		@keyframes glow {
+    		0% {
+        		opacity: 0;
+        		transform: scale(0.95);
+    		}
+    		50% {
+        		opacity: 1;
+        		transform: scale(1.06);
+    		}
+    		100% {
+        		opacity: 0;
+        		transform: scale(0.95);
+    		}
+		}
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Terminal input effect */
+        .input-effect {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .input-effect::after {
+            content: '|';
+            position: absolute;
+            right: -5px;
+            color: #ff9d00;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+        
+        /* Typing animation styles */
+        .typing-container {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+	<div class="grid-overlay"></div>
+    <div class="terminal">
+        <div class="header">
+            <div class="logo"></div>
+            <div class="title">
+              <h1><span class="input-effect">CERBERUS NETWORK TOKEN PROTOCOL</span></h1><br/>
+              <h2><span class="input-effect">IMMUTABLE | TRUSTLESS | DECENTRALIZED</span></h2>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="panel">
+              <h3><span class="input-effect">Protocol Overview</span></h3>
+              <p><span class="input-effect">The Cerberus Network Token Protocol (CRDT), also known as Credit or Cred, is a Solana SPL Token Program built for utility.</span></p>
+              <p><span class="input-effect">The protocol features a fixed token supply that is trustless, immutable and inflation-resistant.</span></p>
+              <p><span class="input-effect">All mint, freeze, and program update authorities have been permanently revoked, ensuring decentralization, automation and trustlessness. A real Solana token program with real blockchain utility.</span></p>
+            </div>
+          
+            <div class="panel">
+              <h3><span class="input-effect">Tokenomics Fundamentals</span></h3>
+              <p><span class="input-effect">Built on Solana's SPL Token Program with a finite supply, the protocol is designed with scarcity, immutability and inflation-resistant properties.</span></p>
+              <p><span class="input-effect">No central authority or backdoor mechanisms - completely immutable, trustless, and verifiable on-chain.</span></p>
+              <p><span class="input-effect">The system is circular by design - supply is released into circulation - no additional tokens can be minted - no single point of authority - no single point of control - no centralization.</span></p>
+            </div>
+            
+            <div class="panel">
+              <h3><span class="input-effect">Technical Specifications</span></h3>
+              <p><span class="input-effect">Total Supply: 600,000,000.</span></p>
+              <p><span class="input-effect">Total Supply Maximum: Fixed.</span></p>
+              <p><span class="input-effect">Token Type: Utility.</span></p>
+              <p><span class="input-effect">Blockchain: Solana.</span></p>
+              <p><span class="input-effect">Mint: Disabled.</span></p>
+              <p><span class="input-effect">Freeze: Disabled.</span></p>
+              <p><span class="input-effect">Inflation Control: Active.</span></p>
+              <p><span class="input-effect">Authorities: Revoked.</span></p>
+            </div>
+      
+        </div>
+        
+        <div class="buttons">
+            <button class="btn">Read Whitepaper</button>
+            <button class="btn">View on Explorer</button>
+            <button class="btn">Join Community</button>
+        </div>
+        
+        <div class="footer">
+          <p><span class="input-effect">CERBERUS NETWORK TOKEN PROTOCOL | IMMUTABLE | TRUSTLESS | DECENTRALIZED</span></p>
+          <br/>
+          <p><span class="input-effect">© Cerberus Network Credit Protocol. All systems operational.</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Create particle effect for background
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Add interactive effects to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    
+                    // Position the ripple
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size/2;
+                    const y = e.clientY - rect.top - size/2;
+                    
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+            
+            // Store original text for typing effect
+            const inputEffects = document.querySelectorAll('.input-effect');
+            inputEffects.forEach(el => {
+                const originalText = el.textContent;
+                el.setAttribute('data-text', originalText);
+                el.textContent = '';
+                
+                // Add container for typing animation
+                const typingContainer = document.createElement('span');
+                typingContainer.className = 'typing-container';
+                el.appendChild(typingContainer);
+            });
+            
+            // Initialize typing animation with delay
+            setTimeout(() => {
+                inputEffects.forEach((el, index) => {
+                    const text = el.getAttribute('data-text');
+                    const typingContainer = el.querySelector('.typing-container');
+                    
+                    let i = 0;
+                    const typeWriter = () => {
+                        if (i < text.length) {
+                            typingContainer.textContent += text.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, Math.random() * 50 + 25);
+                        }
+                    };
+                    
+                    // Start typing after a random delay
+                    setTimeout(typeWriter, index * 200);
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
